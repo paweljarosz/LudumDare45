@@ -1,0 +1,51 @@
+local utils = require "main.utils"
+
+go.property("my_tint", vmath.vector4())
+go.property("sound_no", 1)
+
+local faded = 0.9
+local activated = 1.5
+local completed = 3
+
+function init(self)
+	utils.vibrate()
+	go.set("#sprite", "tint", vmath.vector4(0))
+	utils.tint_to(self.my_tint*faded)				-- LIGHT UP SLIGHTLY
+	self.follow = nil
+	self.played = false
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == utils.SAVE then				-- SAVE MEMORY IN THE CONTAINER
+		print("SAVED")
+		self.dead = true
+		msg.post("#fov", utils.DISABLE)
+		msg.post(sender, utils.SAVE, {good = true})
+		utils.tint_to(utils.FADE_OUT, 1, function()	-- FADE OUT AND DELETE
+			go.delete()
+		end)
+	elseif message_id == utils.TRIGGER and not self.dead
+	and message.other_id == go.get_id("/Player") then
+		if message.enter then
+			utils.tint_to(self.my_tint*activated)	-- ACTIVATED MEMORY
+			if not self.follow then
+				self.follow = timer.delay(0.5, true, function()
+					utils.follow(function()			-- FOLLOW PLAYER
+						utils.vibrate()				-- WHEN REACHED -> VIBRATE
+					end)
+				end)
+			end
+			if not self.played then
+				self.played = true
+				sound.play("#sound"..tostring(self.sound_no))	-- PLAY MEMORY ONCE
+			end
+		else
+			utils.tint_to(self.my_tint*faded)		-- DEACTIVATE
+			if self.follow then
+				timer.cancel(self.follow)			-- DO NOT FOLLOW ANYMORE
+				self.follow = nil
+			end
+			utils.vibrate()
+		end
+	end
+end

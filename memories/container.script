@@ -1,0 +1,91 @@
+local utils = require "main.utils"
+
+GOOD_MEMORIES = 0
+BAD_MEMORIES = 0
+local MEMORIES = nil
+local DEADLINE = nil
+local RESTARTED = false
+
+
+local function restart()
+	if MEMORIES then go.delete(MEMORIES) end
+	GOOD_MEMORIES = 0								-- RESTART VALUES
+	BAD_MEMORIES = 0
+	label.set_text("#good", tostring(GOOD_MEMORIES))
+	label.set_text("#bad", tostring(BAD_MEMORIES))
+
+	go.set_position(vmath.vector3(400,300,0), go.get_id("/Player"))
+
+	print("CREATING NEW MEMORIES")
+	MEMORIES = factory.create("#memories")			-- CREATE NEW MEMORIES
+	ticktock()
+end
+
+local function game_over()
+	local GUI = factory.create("#game_over")	-- SHOW GAME OVER SCREEN
+	sound.stop("#ticktock")
+	sound.play("#accident", _, function()		-- PLAY CAR ACCIDENT
+		if GUI then
+			go.delete(GUI)
+			GUI = nil
+		end
+		restart()
+	end)
+end
+
+
+function ticktock()
+	RESTARTED = false
+	sound.play("#ticktock")
+	if DEADLINE then
+		timer.cancel(DEADLINE)
+	end
+	DEADLINE = timer.delay(30, false, function()		-- SET NEW DEADLINE
+		if not RESTARTED then
+			RESTARTED = true
+			game_over()
+		end
+	end)
+end
+
+function init(self)
+	utils.start_rand()
+	label.set_text("#good", tostring(GOOD_MEMORIES))
+	label.set_text("#bad", tostring(BAD_MEMORIES))
+	MEMORIES = factory.create("#memories")			-- CREATE NEW MEMORIES
+	ticktock()
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == utils.TRIGGER and message.enter then
+		msg.post(msg.url(message.other_id), utils.SAVE)
+		print("COUGHT")
+	elseif message_id == utils.SAVE then
+		go.animate(".", "scale", go.PLAYBACK_ONCE_PINGPONG, 2.3, go.EASING_INOUTSINE, 0.8)
+		if message.good then
+			GOOD_MEMORIES = GOOD_MEMORIES + 1
+			label.set_text("#good", tostring(GOOD_MEMORIES))
+			if GOOD_MEMORIES >= 5 then
+				if not RESTARTED then
+					RESTARTED = true
+					if DEADLINE then
+						timer.cancel(DEADLINE)
+					end
+					game_over()
+				end
+			end
+		else
+			BAD_MEMORIES = BAD_MEMORIES + 1
+			label.set_text("#bad", tostring(BAD_MEMORIES))
+			if BAD_MEMORIES >= 5 then
+				if not RESTARTED then
+					RESTARTED = true
+					if DEADLINE then
+						timer.cancel(DEADLINE)
+					end
+					game_over()
+				end
+			end
+		end
+	end
+end

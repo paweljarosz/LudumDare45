@@ -1,0 +1,28 @@
+function init(self)
+	gui.set_color(gui.get_node("box"), vmath.vector4(0))
+	gui.animate(gui.get_node("box"), gui.PROP_COLOR, vmath.vector4(0,0,0,1), go.EASING_INOUTSINE, 1)
+	local good_text = "You remember "..tostring(GOOD_MEMORIES).." good moment"
+	good_text = good_text..(GOOD_MEMORIES == 1 and " in your life." or "s in your life.")
+
+	local bad_text =  "You experienced "..tostring(BAD_MEMORIES).." bad moment"
+	bad_text = bad_text..(BAD_MEMORIES == 1 and "." or "s.")
+
+	if GOOD_MEMORIES == 5 then
+		bad_text = "I doesn't matter what was bad in your life."
+	elseif BAD_MEMORIES == 5 then
+		good_text = "You slightly remember what was good in your life."
+	end
+
+	
+
+	gui.set_text(gui.get_node("text2"), good_text)
+	gui.set_text(gui.get_node("text3"), bad_text)
+		
+	for i = 1,5 do
+		gui.set_color(gui.get_node("text"..tostring(i)), vmath.vector4(0))
+	end
+	for i = 1,5 do
+		gui.animate(gui.get_node("text"..tostring(i)), gui.PROP_COLOR, vmath.vector4(1),
+		gui.EASING_INOUTSINE, 2, (i*1.2)+1)
+	end
+end

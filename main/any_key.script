@@ -1,0 +1,19 @@
+function init(self)
+	msg.post(".", "acquire_input_focus")
+	self.can_play = false
+	timer.delay(1, false, function() self.can_play = true end)
+end
+
+function on_input(self, action_id, action)
+	if action.pressed and self.can_play then
+		self.can_play = false
+		local pos = go.get_position()
+		pos.y = pos.y - 400
+		factory.create("#container", pos, _, _, 2)
+		go.delete(go.get_id())
+	end
+end
+
+function final(self)
+	msg.post(".", "release_input_focus")
+end

@@ -1,0 +1,16 @@
+go.property("bad_memories", 5)
+go.property("good_memories", 5)
+
+local utils = require "main.utils"
+
+function init(self)
+	self.good = utils.create_memories(self.good_memories, "#good")
+	self.bad = utils.create_memories(self.bad_memories, "#bad")
+	pprint(self.good)
+	pprint(self.bad)
+end
+
+function final(self)
+	for _,memory in ipairs(self.good) do if memory then go.delete(memory) end end
+	for _,memory in ipairs(self.bad) do if memory then go.delete(memory) end end
+end

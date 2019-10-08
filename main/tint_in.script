@@ -1,0 +1,6 @@
+go.property("my_tint", vmath.vector4())
+
+function init(self)
+	go.set("#sprite", "tint", vmath.vector4(0))
+	go.animate("#sprite", "tint", go.PLAYBACK_ONCE_FORWARD, self.my_tint, go.EASING_INOUTSINE, 1.8)
+end
